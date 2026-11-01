@@ -1,0 +1,29 @@
+name: Website availability
+
+on:
+  schedule:
+    # Avoid the top of the hour, when scheduled runs can be delayed more often.
+    - cron: '7,22,37,52 * * * *'
+  workflow_dispatch:
+  push:
+    paths:
+      - '.github/workflows/website-availability.yml'
+      - 'scripts/check-uptime.sh'
+      - 'tests/test_check_uptime.py'
+
+permissions:
+  contents: read
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          persist-credentials: false
+      - name: Test the availability check
+        run: python3 -m unittest discover -s tests -v
+      - name: Check the production site
+        run: bash scripts/check-uptime.sh
